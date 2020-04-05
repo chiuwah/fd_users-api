@@ -34,7 +34,13 @@ func (s *usersService) CreateUser(user users.User) (*users.User, *errors.RestErr
 
 	user.Status = users.StatusActive
 	user.DateCreated = date_utils.GetNowDBFormat()
-	user.Password = crypto_utils.GetMd5(user.Password)
+
+	// user.Password = crypto_utils.GetMd5(user.Password)
+	password, err := crypto_utils.HashPassword(user.Password)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = password
 
 	if err := user.Save(); err != nil {
 		return nil, err
