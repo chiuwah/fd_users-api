@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"github.com/chiuwah/fd_users-api/domain/users"
 	"github.com/chiuwah/fd_users-api/services"
 	"github.com/chiuwah/fd_users-api/utils/errors"
@@ -100,4 +101,20 @@ func Search(c *gin.Context) {
 		result[index] = user.Marshall(c.GetHeader("X-Public") == "true")
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+func Login(c *gin.Context) {
+	var request users.LoginRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		restErr := errors.NewBadRequestError(fmt.Sprint("invalid json body %s", err.Error()))
+		c.JSON(restErr.Status, restErr)
+		return
+	}
+	user, err := services.UsersService.LoginUser(request)
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+	c.JSON(http.StatusOK, user.Marshall(c.GetHeader("X-Public") == "true"))
+
 }
